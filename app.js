@@ -110,6 +110,88 @@ function image(k) {
     loading="lazy" onerror="this.remove()">`;
 }
 
+// ---------- UI sounds ----------
+// Made in code with the Web Audio API, so there are no sound files.
+let audio = null;
+let soundOn = true;
+try { soundOn = localStorage.getItem("gk-sound") !== "off"; } catch (e) {}
+
+function audioCtx() {
+  if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+  if (audio.state === "suspended") audio.resume();
+  return audio;
+}
+
+// A soft keyboard "thock": a low thump plus a short muffled click
+function playThock() {
+  if (!soundOn) return;
+  const a = audioCtx(), t = a.currentTime;
+  const out = a.createGain();
+  out.gain.value = 0.3;
+  out.connect(a.destination);
+
+  const thump = a.createOscillator(), thumpGain = a.createGain();
+  thump.type = "sine";
+  thump.frequency.setValueAtTime(190, t);
+  thump.frequency.exponentialRampToValueAtTime(70, t + 0.08);
+  thumpGain.gain.setValueAtTime(0.9, t);
+  thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+  thump.connect(thumpGain).connect(out);
+  thump.start(t);
+  thump.stop(t + 0.12);
+
+  const len = Math.floor(a.sampleRate * 0.03);
+  const buf = a.createBuffer(1, len, a.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+  const click = a.createBufferSource(), filter = a.createBiquadFilter(), clickGain = a.createGain();
+  click.buffer = buf;
+  filter.type = "lowpass";
+  filter.frequency.value = 1800;
+  clickGain.gain.value = 0.5;
+  click.connect(filter).connect(clickGain).connect(out);
+  click.start(t);
+}
+
+// A short "pop" that rises when opening and falls when closing
+function playPop(up = true) {
+  if (!soundOn) return;
+  const a = audioCtx(), t = a.currentTime;
+  const osc = a.createOscillator(), gain = a.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(up ? 380 : 620, t);
+  osc.frequency.exponentialRampToValueAtTime(up ? 620 : 380, t + 0.09);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(0.15, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  osc.connect(gain).connect(a.destination);
+  osc.start(t);
+  osc.stop(t + 0.13);
+}
+
+document.addEventListener("click", e => {
+  if (e.target.closest(".card, .chips a, .store-link, .categories-menu a, .tag, .back, .about-link, .brand")) playThock();
+});
+
+const soundBtn = document.getElementById("sound-btn");
+function updateSoundBtn() {
+  soundBtn.setAttribute("aria-pressed", String(soundOn));
+  soundBtn.title = soundOn ? "Sounds on (click to mute)" : "Sounds off (click to turn on)";
+  soundBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/>
+    ${soundOn ? '<path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>'
+              : '<path d="m16 9 6 6"/><path d="m22 9-6 6"/>'}
+  </svg>`;
+}
+soundBtn.addEventListener("click", () => {
+  soundOn = !soundOn;
+  try { localStorage.setItem("gk-sound", soundOn ? "on" : "off"); } catch (e) {}
+  updateSoundBtn();
+  playPop(true);
+});
+updateSoundBtn();
+
 // ---------- Categories menu ----------
 function buildMenu(activeId) {
   const items = [{ id: "", name: "All Keyboards", count: KEYBOARDS.length },
@@ -126,7 +208,11 @@ function setMenu(open) {
   if (open) menuList.querySelector("a")?.focus();
 }
 
-menuBtn.addEventListener("click", () => setMenu(menu.hidden));
+menuBtn.addEventListener("click", () => {
+  const opening = menu.hidden;
+  setMenu(opening);
+  playPop(opening);
+});
 document.addEventListener("click", e => {
   if (!menu.hidden && !menu.contains(e.target) && !menuBtn.contains(e.target)) setMenu(false);
 });
