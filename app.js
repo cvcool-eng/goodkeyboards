@@ -48,6 +48,15 @@ const LAYOUTS = {
     [...ROWS_60[4], -0.25, 1, 1, 1],
   ],
 };
+// Full size = TKL plus a number pad on the right
+LAYOUTS.full = [
+  LAYOUTS.tkl[0], "gap",
+  [...LAYOUTS.tkl[2], -0.25, 1, 1, 1, 1],
+  [...LAYOUTS.tkl[3], -0.25, 1, 1, 1, 1],
+  [...ROWS_60[2], -3.5, 1, 1, 1, 1],
+  [...LAYOUTS.tkl[5], -1.25, 1, 1, 1, 1],
+  [...LAYOUTS.tkl[6], -0.25, 2, 1, 1],
+];
 const COLORS = {
   olive: "#706D54", brown: "#A08963", tan: "#C9B194",
   cream: "#E4E8D8", green: "#C9D1B5", dark: "#2B2A21",

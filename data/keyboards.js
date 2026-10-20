@@ -7,7 +7,7 @@
 //   image       leave "" and just save a photo as images/<id>.png
 //               (e.g. images/keychron-q2.png). No photo = drawing.
 //   look        how the drawing looks:
-//                 layout  "60", "65", "75" or "tkl"
+//                 layout  "60", "65", "75", "tkl" or "full"
 //                 knob    true to draw a volume knob
 //                 lowProfile  true for flat, thin keys
 //                 colors  [case, letter keys, other keys, Esc/Enter]
@@ -196,5 +196,60 @@ const KEYBOARDS = [
     summary: "Logitech's wireless 60% board built for esports players.",
     specs: { Layout: "60%", Connection: "Wired / Lightspeed wireless / Bluetooth" },
     stores: searchLinks("Logitech G Pro X 60"),
+  },
+  {
+    id: "keychron-q1-max",
+    name: "Q1 Max",
+    brand: "Keychron",
+    image: "",
+    look: { layout: "75", knob: true, colors: ["dark", "cream", "brown", "tan"] },
+    categories: ["thock", "typing"],
+    summary: "A YouTube favorite: a heavy all-aluminum 75% board with a double-gasket mount and wireless.",
+    specs: { Layout: "75%", Case: "CNC aluminum", Mount: "Double gasket", Connection: "Wired / 2.4 GHz / Bluetooth" },
+    stores: [{ name: "Keychron (official)", url: "https://www.keychron.com" }, ...searchLinks("Keychron Q1 Max")],
+  },
+  {
+    id: "razer-blackwidow-v4-75",
+    name: "BlackWidow V4 75%",
+    brand: "Razer",
+    image: "",
+    look: { layout: "75", colors: ["dark", "cream", "tan", "olive"] },
+    categories: ["thock", "typing"],
+    summary: "Razer's first hot-swappable keyboard, with a gasket-mounted plate and two layers of sound-absorbing foam.",
+    specs: { Layout: "75%", Switches: "Razer Orange tactile, hot-swappable", Mount: "Gasket", Case: "Aluminum" },
+    stores: searchLinks("Razer BlackWidow V4 75%"),
+  },
+  {
+    id: "razer-huntsman-v3-pro-mini",
+    name: "Huntsman V3 Pro Mini",
+    brand: "Razer",
+    image: "",
+    look: { layout: "60", colors: ["dark", "tan", "olive", "brown"] },
+    categories: ["60"],
+    summary: "A 60% esports board with analog optical switches and Rapid Trigger for super-fast key resets.",
+    specs: { Layout: "60%", Switches: "Analog optical (0.1–4.0 mm adjustable)", Keycaps: "PBT" },
+    stores: searchLinks("Razer Huntsman V3 Pro Mini"),
+  },
+  {
+    id: "redragon-k617-fizz",
+    name: "K617 Fizz",
+    brand: "Redragon",
+    image: "",
+    look: { layout: "60", colors: ["cream", "olive", "tan", "brown"] },
+    categories: ["60", "budget"],
+    summary: "One of the cheapest popular 60% mechanical keyboards, often around $25–40.",
+    specs: { Layout: "60%", Switches: "Mechanical (Red linear)", Connection: "Wired" },
+    stores: searchLinks("Redragon K617 Fizz"),
+  },
+  {
+    id: "razer-ornata-v3-x",
+    name: "Ornata V3 X",
+    brand: "Razer",
+    image: "",
+    look: { layout: "full", lowProfile: true, colors: ["dark", "olive", "olive", "tan"] },
+    categories: ["quiet", "budget"],
+    summary: "A low-profile full-size board with silent membrane switches, usually around $40.",
+    specs: { Layout: "Full size", Switches: "Silent membrane", Profile: "Low-profile", Connection: "Wired" },
+    stores: searchLinks("Razer Ornata V3 X"),
   },
 ];
