@@ -43,6 +43,14 @@ if (-not (git config user.name))  { git config user.name $owner }
 if (-not (git config user.email)) { git config user.email "$owner@users.noreply.github.com" }
 
 # 2. Commit changes
+# If anything changed, give the CSS/JS links a new ?v= number so browsers
+# download the new files instead of using old saved copies.
+if (git status --porcelain) {
+  $version = Get-Date -Format "yyyyMMddHHmmss"
+  $html = [IO.File]::ReadAllText("$PSScriptRoot\index.html")
+  $html = [regex]::Replace($html, '\?v=[0-9]+"', "?v=$version`"")
+  [IO.File]::WriteAllText("$PSScriptRoot\index.html", $html)
+}
 git add -A
 git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) {
