@@ -116,10 +116,45 @@ let audio = null;
 let soundOn = true;
 try { soundOn = localStorage.getItem("gk-sound") !== "off"; } catch (e) {}
 
+// Phones and tablets: small speakers can't play deep bass, so sounds are
+// shifted higher and played louder there.
+const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
 function audioCtx() {
-  if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audio) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    audio = new AC({ latencyHint: "interactive" });
+  }
   if (audio.state === "suspended") audio.resume();
   return audio;
+}
+
+// Start the audio engine on the first touch/click/key so the first sound isn't delayed.
+// (Phones only allow this during a tap, so try on each kind of event until it works.)
+function unlockAudio() {
+  if (!soundOn) return;
+  const a = audioCtx();
+  const silent = a.createBufferSource();
+  silent.buffer = a.createBuffer(1, 1, 22050);
+  silent.connect(a.destination);
+  silent.start(0);
+  if (a.state === "running") {
+    for (const ev of ["pointerdown", "touchend", "keydown"]) document.removeEventListener(ev, unlockAudio, true);
+  }
+}
+for (const ev of ["pointerdown", "touchend", "keydown"]) document.addEventListener(ev, unlockAudio, true);
+
+// Click noise is made once per length and reused, so each click starts instantly
+const noiseCache = {};
+function noiseBuffer(a, seconds) {
+  if (!noiseCache[seconds]) {
+    const len = Math.floor(a.sampleRate * seconds);
+    const buf = a.createBuffer(1, len, a.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
+    noiseCache[seconds] = buf;
+  }
+  return noiseCache[seconds];
 }
 
 // Key sound profiles. Each sound = a short "body" tone + a filtered click.
@@ -139,14 +174,15 @@ function playKey(name = "clack") {
   const p = KEY_SOUNDS[name] || KEY_SOUNDS.clack;
   const a = audioCtx(), t = a.currentTime;
   const out = a.createGain();
-  out.gain.value = p.volume;
+  out.gain.value = p.volume * (isTouch ? 1.8 : 1);
   out.connect(a.destination);
 
   const [wave, from, to, toneGain, toneLen] = p.tone;
+  const pitch = isTouch && from < 600 ? 2.2 : 1;   // lift deep tones so phone speakers can play them
   const body = a.createOscillator(), bodyGain = a.createGain();
   body.type = wave;
-  body.frequency.setValueAtTime(from, t);
-  body.frequency.exponentialRampToValueAtTime(to, t + toneLen * 0.8);
+  body.frequency.setValueAtTime(from * pitch, t);
+  body.frequency.exponentialRampToValueAtTime(to * pitch, t + toneLen * 0.8);
   bodyGain.gain.setValueAtTime(toneGain, t);
   bodyGain.gain.exponentialRampToValueAtTime(0.001, t + toneLen);
   body.connect(bodyGain).connect(out);
@@ -155,14 +191,11 @@ function playKey(name = "clack") {
 
   const [filterType, freq, clickGain, clickLen] = p.click;
   for (let n = 0; n <= (p.repeat || 0); n++) {
-    const len = Math.floor(a.sampleRate * clickLen);
-    const buf = a.createBuffer(1, len, a.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
     const click = a.createBufferSource(), filter = a.createBiquadFilter(), gain = a.createGain();
-    click.buffer = buf;
+    click.buffer = noiseBuffer(a, clickLen);
     filter.type = filterType;
-    filter.frequency.value = freq;
+    // Muffled (lowpass) clicks get brighter on phones so they don't sound muted
+    filter.frequency.value = isTouch && filterType === "lowpass" ? freq * 1.8 : freq;
     gain.gain.value = clickGain;
     click.connect(filter).connect(gain).connect(out);
     click.start(t + n * 0.014);
@@ -348,10 +381,21 @@ function aboutView() {
     </article>`;
 }
 
+// Remember how far down each list page was scrolled, so going back from a
+// keyboard returns you to the same spot instead of the top
+const listScroll = {};
+let currentHash = null;
+let currentIsList = false;
+
 function route() {
-  const [, type, id] = location.hash.replace(/^#\/?/, "/").split("/");
+  if (currentIsList) listScroll[currentHash] = window.scrollY;
+  const cameFromKeyboard = (currentHash || "").startsWith("#/keyboard/");
+
+  const hash = location.hash || "#/";
+  const [, type, id] = hash.replace(/^#\/?/, "/").split("/");
+  const isList = type !== "keyboard" && type !== "about";
   let activeId = "";
-  if (type !== "keyboard" && type !== "about") lastListHash = location.hash || "#/";
+  if (isList) lastListHash = hash;
 
   if (type === "category" && categoryById(id)) {
     const c = categoryById(id);
@@ -373,13 +417,20 @@ function route() {
   const aboutLink = document.querySelector(".about-link");
   if (type === "about") aboutLink.setAttribute("aria-current", "page");
   else aboutLink.removeAttribute("aria-current");
-  // Replay the bounce-in animation for the new page
-  main.classList.remove("enter");
-  void main.offsetWidth;
-  main.classList.add("enter");
+  const restoring = isList && cameFromKeyboard && listScroll[hash] != null;
 
-  window.scrollTo(0, 0);
+  // Replay the bounce-in animation for the new page (not when returning to a list)
+  main.classList.remove("enter");
+  if (!restoring) {
+    void main.offsetWidth;
+    main.classList.add("enter");
+  }
+
+  window.scrollTo(0, restoring ? listScroll[hash] : 0);
   main.focus({ preventScroll: true });
+
+  currentHash = hash;
+  currentIsList = isList;
 }
 
 window.addEventListener("hashchange", route);
