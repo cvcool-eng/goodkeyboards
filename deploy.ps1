@@ -89,6 +89,34 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $url = gh api "repos/$owner/$Repo/pages" --jq .html_url
+if (-not $url.EndsWith("/")) { $url += "/" }
+
+# 5. Tell Bing about the pages (IndexNow). Bing also powers Yahoo, DuckDuckGo and Ecosia.
+#    The key file (32 letters/numbers + .txt) proves to Bing that this site is ours.
+$keyFile = Get-ChildItem $PSScriptRoot -Filter *.txt | Where-Object { $_.BaseName -match '^[0-9a-f]{32}$' } | Select-Object -First 1
+if ($keyFile -and (Test-Path "$PSScriptRoot\sitemap.xml")) {
+  Write-Host "Waiting for GitHub to finish publishing..."
+  for ($i = 0; $i -lt 36; $i++) {
+    $status = gh api "repos/$owner/$Repo/pages/builds/latest" --jq .status
+    if ($status -eq "built" -or $status -eq "errored") { break }
+    Start-Sleep 5
+  }
+  $pages = [regex]::Matches([IO.File]::ReadAllText("$PSScriptRoot\sitemap.xml"), '<loc>([^<]+)</loc>') | ForEach-Object { $_.Groups[1].Value }
+  $body = @{
+    host        = ([Uri]$url).Host
+    key         = $keyFile.BaseName
+    keyLocation = "$url$($keyFile.Name)"
+    urlList     = @($pages)
+  } | ConvertTo-Json
+  try {
+    Invoke-WebRequest -UseBasicParsing -Method Post -Uri "https://api.indexnow.org/indexnow" `
+      -ContentType "application/json; charset=utf-8" -Body $body | Out-Null
+    Write-Host "Sent $($pages.Count) pages to Bing (IndexNow)."
+  } catch {
+    Write-Host "Couldn't notify Bing this time (that's OK, it will try again next publish): $($_.Exception.Message)"
+  }
+}
+
 Write-Host ""
 Write-Host "Done! Your site will be live in about a minute at:" -ForegroundColor Green
 Write-Host "  $url" -ForegroundColor Green
