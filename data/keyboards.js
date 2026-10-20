@@ -16,6 +16,7 @@
 //               "thock" (deep), "creamy" (smooth), "clack" (bright),
 //               "clicky" (blue switches) or "quiet"
 //   categories  any of the category ids listed in CATEGORIES below
+//               (60, 65, 75, typing, thock, quiet, budget)
 //   summary     one or two sentences
 //   specs       anything you want listed
 //   stores      where to buy (store search links)
@@ -27,6 +28,7 @@
 const CATEGORIES = [
   { id: "60",     name: "60% Keyboards",    blurb: "Compact boards with no arrow keys or function row. Maximum mouse space." },
   { id: "65",     name: "65% Keyboards",    blurb: "Compact boards that keep the arrow keys." },
+  { id: "75",     name: "75% Keyboards",    blurb: "Compact boards that keep the arrow keys and the F1–F12 row." },
   { id: "typing", name: "Typing Keyboards", blurb: "Comfortable, consistent boards for long typing sessions." },
   { id: "thock",  name: "Thock Keyboards",  blurb: "Deep, satisfying sound profiles." },
   { id: "quiet",  name: "Quiet Keyboards",  blurb: "These won't wake up your parents at 4 am in the morning." },
@@ -53,7 +55,7 @@ const KEYBOARDS = [
     brand: "AULA",
     image: "",
     look: { layout: "75", knob: true, colors: ["olive", "cream", "tan", "brown"] },
-    categories: ["thock", "typing"],
+    categories: ["75", "thock", "typing"],
     summary: "A gasket-mounted 75% board known for its deep sound at a low price.",
     specs: { Layout: "75%", Connection: "Wired / 2.4 GHz / Bluetooth", Mount: "Gasket" },
     stores: searchLinks("AULA F75 keyboard"),
@@ -185,7 +187,7 @@ const KEYBOARDS = [
     brand: "Corsair",
     image: "",
     look: { layout: "75", colors: ["brown", "cream", "tan", "olive"] },
-    categories: ["quiet", "typing"],
+    categories: ["75", "quiet", "typing"],
     summary: "A 75% wireless board with two layers of sound dampening and smooth linear switches.",
     specs: { Layout: "75%", Switches: "MLX Red linear, hot-swappable", Connection: "Wired / 2.4 GHz / Bluetooth" },
     stores: searchLinks("Corsair K65 Plus Wireless"),
@@ -221,7 +223,7 @@ const KEYBOARDS = [
     brand: "Keychron",
     image: "",
     look: { layout: "75", knob: true, colors: ["dark", "cream", "brown", "tan"] },
-    categories: ["thock", "typing"],
+    categories: ["75", "thock", "typing"],
     summary: "A YouTube favorite: a heavy all-aluminum 75% board with a double-gasket mount and wireless.",
     specs: { Layout: "75%", Case: "CNC aluminum", Mount: "Double gasket", Connection: "Wired / 2.4 GHz / Bluetooth" },
     stores: [{ name: "Keychron (official)", url: "https://www.keychron.com" }, ...searchLinks("Keychron Q1 Max")],
@@ -233,7 +235,7 @@ const KEYBOARDS = [
     brand: "Razer",
     image: "",
     look: { layout: "75", colors: ["dark", "cream", "tan", "olive"] },
-    categories: ["thock", "typing"],
+    categories: ["75", "thock", "typing"],
     summary: "Razer's first hot-swappable keyboard, with a gasket-mounted plate and two layers of sound-absorbing foam.",
     specs: { Layout: "75%", Switches: "Razer Orange tactile, hot-swappable", Mount: "Gasket", Case: "Aluminum" },
     stores: searchLinks("Razer BlackWidow V4 75%"),
