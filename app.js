@@ -282,6 +282,11 @@ function listView(title, intro, list, activeId) {
       : `<div class="empty">No keyboards in this category yet. Check back soon.</div>`}`;
 }
 
+// A specific video if the keyboard has one, otherwise YouTube search results for its reviews
+function youtubeLink(k) {
+  return k.youtube || "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${k.brand} ${k.name} review`);
+}
+
 function detailView(k) {
   document.title = `${k.brand} ${k.name} – GoodKeyboards`;
   const specs = Object.entries(k.specs || {}).map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("");
@@ -306,6 +311,10 @@ function detailView(k) {
         <section class="stores">
           <h2>Where to buy</h2>
           <ul>${stores}</ul>
+          <a class="store-link youtube-link" href="${esc(youtubeLink(k))}" target="_blank" rel="noopener">
+            <span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+            YouTube review</span><span aria-hidden="true">&rarr;</span>
+          </a>
           <p class="small">Prices and availability change. Check the store for the current price.</p>
         </section>
       </div>

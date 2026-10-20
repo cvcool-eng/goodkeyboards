@@ -20,6 +20,8 @@
 //   summary     one or two sentences
 //   specs       anything you want listed
 //   stores      where to buy (store search links)
+//   youtube     optional: link to one specific review video. If left out,
+//               the "YouTube review" button searches YouTube for reviews.
 //
 // The sample keyboards below are EXAMPLES. Check the details against
 // the manufacturer's page before you publish.

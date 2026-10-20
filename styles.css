@@ -159,6 +159,9 @@ main:focus { outline: none; }
   padding: 14px 18px; border-radius: 10px; font-weight: 500;
 }
 .store-link:hover { background: var(--ink-soft); }
+.youtube-link { margin-top: 10px; background: var(--brown); }
+.youtube-link:hover { background: var(--olive); }
+.youtube-link span:first-child { display: inline-flex; align-items: center; gap: 8px; }
 .small { font-size: 0.85rem; color: var(--ink-soft); }
 
 .empty { padding: 40px; background: var(--surface); border-radius: var(--radius); text-align: center; }
