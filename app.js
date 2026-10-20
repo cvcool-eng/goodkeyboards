@@ -122,33 +122,36 @@ function audioCtx() {
   return audio;
 }
 
-// A soft keyboard "thock": a low thump plus a short muffled click
-function playThock() {
+// A keyboard "clack": a sharp, bright plastic click with a short body
+function playClack() {
   if (!soundOn) return;
   const a = audioCtx(), t = a.currentTime;
   const out = a.createGain();
   out.gain.value = 0.3;
   out.connect(a.destination);
 
-  const thump = a.createOscillator(), thumpGain = a.createGain();
-  thump.type = "sine";
-  thump.frequency.setValueAtTime(190, t);
-  thump.frequency.exponentialRampToValueAtTime(70, t + 0.08);
-  thumpGain.gain.setValueAtTime(0.9, t);
-  thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-  thump.connect(thumpGain).connect(out);
-  thump.start(t);
-  thump.stop(t + 0.12);
+  // Short bright "body" tone of the keycap
+  const body = a.createOscillator(), bodyGain = a.createGain();
+  body.type = "triangle";
+  body.frequency.setValueAtTime(1400, t);
+  body.frequency.exponentialRampToValueAtTime(600, t + 0.03);
+  bodyGain.gain.setValueAtTime(0.35, t);
+  bodyGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+  body.connect(bodyGain).connect(out);
+  body.start(t);
+  body.stop(t + 0.05);
 
-  const len = Math.floor(a.sampleRate * 0.03);
+  // Sharp, crisp click on top
+  const len = Math.floor(a.sampleRate * 0.02);
   const buf = a.createBuffer(1, len, a.sampleRate);
   const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
   const click = a.createBufferSource(), filter = a.createBiquadFilter(), clickGain = a.createGain();
   click.buffer = buf;
-  filter.type = "lowpass";
-  filter.frequency.value = 1800;
-  clickGain.gain.value = 0.5;
+  filter.type = "bandpass";
+  filter.frequency.value = 3800;
+  filter.Q.value = 0.9;
+  clickGain.gain.value = 1.2;
   click.connect(filter).connect(clickGain).connect(out);
   click.start(t);
 }
@@ -170,7 +173,7 @@ function playPop(up = true) {
 }
 
 document.addEventListener("click", e => {
-  if (e.target.closest(".card, .chips a, .store-link, .categories-menu a, .tag, .back, .about-link, .brand")) playThock();
+  if (e.target.closest(".card, .chips a, .store-link, .categories-menu a, .tag, .back, .about-link, .brand")) playClack();
 });
 
 const soundBtn = document.getElementById("sound-btn");
