@@ -169,6 +169,7 @@ main:focus { outline: none; }
 /* Footer */
 .site-footer { background: var(--olive); color: #fff; padding: 24px 16px; text-align: center; font-size: 0.9rem; }
 .site-footer p { margin: 4px auto; max-width: 70ch; }
+.site-footer .thanks { font-size: 1.05rem; font-weight: 500; margin-bottom: 8px; }
 
 /* ---------- Animations ---------- */
 :root { --bounce: cubic-bezier(0.3, 1.25, 0.5, 1); }

@@ -372,7 +372,7 @@ function aboutView() {
         <p>Helping you find the keyboard that fits you.</p>
       </section>
       <p>GoodKeyboards is a showcase of the best gaming keyboards on the market. We sort them into simple
-        categories, like 60%, 65%, typing, thock, quiet and budget (under $60), so you can quickly find one
+        categories, like 60%, 65%, 75%, typing, thock, quiet and budget (under $60), so you can quickly find one
         that fits how you play and type.</p>
       <h2>How it works</h2>
       <p>Pick a category or browse all keyboards, then click a keyboard to see its details and links to stores
