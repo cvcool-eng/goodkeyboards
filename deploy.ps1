@@ -14,7 +14,8 @@ param(
   [string]$Message = "Update site"
 )
 
-$ErrorActionPreference = "Stop"
+# Native tools (git, gh) report problems through exit codes, checked below.
+$ErrorActionPreference = "Continue"
 Set-Location $PSScriptRoot
 
 foreach ($tool in "git", "gh") {
@@ -46,14 +47,14 @@ git add -A
 git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) {
   git commit -m $Message | Out-Null
+  if ($LASTEXITCODE -ne 0) { Write-Host "Commit failed." -ForegroundColor Red; exit 1 }
   Write-Host "Committed changes."
 } else {
   Write-Host "No new changes to commit."
 }
 
 # 3. Create GitHub repo (first run only) and push
-git remote get-url origin *> $null
-if ($LASTEXITCODE -ne 0) {
+if ((git remote) -notcontains "origin") {
   gh repo create "$owner/$Repo" --public --source . --remote origin --push
 } else {
   git push -u origin main
@@ -64,6 +65,7 @@ if ($LASTEXITCODE -ne 0) { Write-Host "Push failed." -ForegroundColor Red; exit 
 gh api "repos/$owner/$Repo/pages" *> $null
 if ($LASTEXITCODE -ne 0) {
   gh api -X POST "repos/$owner/$Repo/pages" -f "source[branch]=main" -f "source[path]=/" | Out-Null
+  if ($LASTEXITCODE -ne 0) { Write-Host "Could not turn on GitHub Pages." -ForegroundColor Red; exit 1 }
   Write-Host "Enabled GitHub Pages."
 }
 
