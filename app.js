@@ -304,7 +304,7 @@ function detailView(k) {
       <span>Buy on ${esc(s.name)}</span><span aria-hidden="true">&rarr;</span>
     </a></li>`).join("");
   main.innerHTML = `
-    <a class="back" href="${lastListHash}">&larr; Back <kbd class="esc-hint">Esc</kbd></a>
+    <a class="back" href="${lastListHash}">&larr; Back</a>
     <article class="detail">
       <div>
         <div class="detail-img" title="Tap to hear how it sounds">${image(k)}</div>
