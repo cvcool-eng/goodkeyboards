@@ -12,6 +12,9 @@
 //                 lowProfile  true for flat, thin keys
 //                 colors  [case, letter keys, other keys, Esc/Enter]
 //                         using olive, brown, tan, cream, green, dark
+//   sound       click sound on this keyboard's card and page:
+//               "thock" (deep), "creamy" (smooth), "clack" (bright),
+//               "clicky" (blue switches) or "quiet"
 //   categories  any of the category ids listed in CATEGORIES below
 //   summary     one or two sentences
 //   specs       anything you want listed
@@ -45,6 +48,7 @@ function searchLinks(query) {
 const KEYBOARDS = [
   {
     id: "aula-f75",
+    sound: "thock",
     name: "F75",
     brand: "AULA",
     image: "",
@@ -56,6 +60,7 @@ const KEYBOARDS = [
   },
   {
     id: "royal-kludge-rk61",
+    sound: "clack",
     name: "RK61",
     brand: "Royal Kludge",
     image: "",
@@ -67,6 +72,7 @@ const KEYBOARDS = [
   },
   {
     id: "wooting-60he",
+    sound: "clack",
     name: "60HE",
     brand: "Wooting",
     image: "",
@@ -78,6 +84,7 @@ const KEYBOARDS = [
   },
   {
     id: "keychron-q2",
+    sound: "thock",
     name: "Q2",
     brand: "Keychron",
     image: "",
@@ -89,6 +96,7 @@ const KEYBOARDS = [
   },
   {
     id: "keychron-k6",
+    sound: "clack",
     name: "K6",
     brand: "Keychron",
     image: "",
@@ -100,6 +108,7 @@ const KEYBOARDS = [
   },
   {
     id: "hyperx-alloy-origins-65",
+    sound: "clack",
     name: "Alloy Origins 65",
     brand: "HyperX",
     image: "",
@@ -111,6 +120,7 @@ const KEYBOARDS = [
   },
   {
     id: "razer-deathstalker-v2-pro-tkl",
+    sound: "quiet",
     name: "DeathStalker V2 Pro TKL",
     brand: "Razer",
     image: "",
@@ -122,6 +132,7 @@ const KEYBOARDS = [
   },
   {
     id: "redragon-k552",
+    sound: "clicky",
     name: "K552 Kumara",
     brand: "Redragon",
     image: "",
@@ -133,6 +144,7 @@ const KEYBOARDS = [
   },
   {
     id: "steelseries-apex-3-tkl",
+    sound: "quiet",
     name: "Apex 3 TKL",
     brand: "SteelSeries",
     image: "",
@@ -144,6 +156,7 @@ const KEYBOARDS = [
   },
   {
     id: "steelseries-apex-pro-mini",
+    sound: "clack",
     name: "Apex Pro Mini",
     brand: "SteelSeries",
     image: "",
@@ -155,6 +168,7 @@ const KEYBOARDS = [
   },
   {
     id: "corsair-k65-rgb-mini",
+    sound: "clack",
     name: "K65 RGB Mini",
     brand: "Corsair",
     image: "",
@@ -166,6 +180,7 @@ const KEYBOARDS = [
   },
   {
     id: "corsair-k65-plus-wireless",
+    sound: "creamy",
     name: "K65 Plus Wireless",
     brand: "Corsair",
     image: "",
@@ -177,6 +192,7 @@ const KEYBOARDS = [
   },
   {
     id: "razer-blackwidow-v3-mini",
+    sound: "clicky",
     name: "BlackWidow V3 Mini HyperSpeed",
     brand: "Razer",
     image: "",
@@ -188,6 +204,7 @@ const KEYBOARDS = [
   },
   {
     id: "logitech-g-pro-x-60",
+    sound: "clack",
     name: "G Pro X 60",
     brand: "Logitech",
     image: "",
@@ -199,6 +216,7 @@ const KEYBOARDS = [
   },
   {
     id: "keychron-q1-max",
+    sound: "thock",
     name: "Q1 Max",
     brand: "Keychron",
     image: "",
@@ -210,6 +228,7 @@ const KEYBOARDS = [
   },
   {
     id: "razer-blackwidow-v4-75",
+    sound: "thock",
     name: "BlackWidow V4 75%",
     brand: "Razer",
     image: "",
@@ -221,6 +240,7 @@ const KEYBOARDS = [
   },
   {
     id: "razer-huntsman-v3-pro-mini",
+    sound: "clack",
     name: "Huntsman V3 Pro Mini",
     brand: "Razer",
     image: "",
@@ -232,6 +252,7 @@ const KEYBOARDS = [
   },
   {
     id: "redragon-k617-fizz",
+    sound: "clack",
     name: "K617 Fizz",
     brand: "Redragon",
     image: "",
@@ -243,6 +264,7 @@ const KEYBOARDS = [
   },
   {
     id: "razer-ornata-v3-x",
+    sound: "quiet",
     name: "Ornata V3 X",
     brand: "Razer",
     image: "",

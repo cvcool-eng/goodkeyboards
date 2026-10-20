@@ -122,38 +122,60 @@ function audioCtx() {
   return audio;
 }
 
-// A keyboard "clack": a sharp, bright plastic click with a short body
-function playClack() {
+// Key sound profiles. Each sound = a short "body" tone + a filtered click.
+//   tone:  [wave, start Hz, end Hz, loudness, length in seconds]
+//   click: [filter, Hz, loudness, length in seconds]
+//   repeat: extra clicks (the double click of clicky "blue" switches)
+const KEY_SOUNDS = {
+  thock:  { volume: 0.2,  tone: ["sine", 190, 70, 0.9, 0.1],        click: ["lowpass", 1600, 0.5, 0.03] },
+  creamy: { volume: 0.18, tone: ["sine", 330, 140, 0.6, 0.07],      click: ["lowpass", 2600, 0.6, 0.025] },
+  clack:  { volume: 0.16, tone: ["triangle", 1400, 600, 0.35, 0.04], click: ["bandpass", 3800, 1.2, 0.02] },
+  clicky: { volume: 0.14, tone: ["triangle", 2200, 1200, 0.25, 0.025], click: ["highpass", 4500, 1.1, 0.012], repeat: 1 },
+  quiet:  { volume: 0.09, tone: ["sine", 240, 110, 0.4, 0.05],      click: ["lowpass", 900, 0.3, 0.02] },
+};
+
+function playKey(name = "clack") {
   if (!soundOn) return;
+  const p = KEY_SOUNDS[name] || KEY_SOUNDS.clack;
   const a = audioCtx(), t = a.currentTime;
   const out = a.createGain();
-  out.gain.value = 0.3;
+  out.gain.value = p.volume;
   out.connect(a.destination);
 
-  // Short bright "body" tone of the keycap
+  const [wave, from, to, toneGain, toneLen] = p.tone;
   const body = a.createOscillator(), bodyGain = a.createGain();
-  body.type = "triangle";
-  body.frequency.setValueAtTime(1400, t);
-  body.frequency.exponentialRampToValueAtTime(600, t + 0.03);
-  bodyGain.gain.setValueAtTime(0.35, t);
-  bodyGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+  body.type = wave;
+  body.frequency.setValueAtTime(from, t);
+  body.frequency.exponentialRampToValueAtTime(to, t + toneLen * 0.8);
+  bodyGain.gain.setValueAtTime(toneGain, t);
+  bodyGain.gain.exponentialRampToValueAtTime(0.001, t + toneLen);
   body.connect(bodyGain).connect(out);
   body.start(t);
-  body.stop(t + 0.05);
+  body.stop(t + toneLen + 0.02);
 
-  // Sharp, crisp click on top
-  const len = Math.floor(a.sampleRate * 0.02);
-  const buf = a.createBuffer(1, len, a.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
-  const click = a.createBufferSource(), filter = a.createBiquadFilter(), clickGain = a.createGain();
-  click.buffer = buf;
-  filter.type = "bandpass";
-  filter.frequency.value = 3800;
-  filter.Q.value = 0.9;
-  clickGain.gain.value = 1.2;
-  click.connect(filter).connect(clickGain).connect(out);
-  click.start(t);
+  const [filterType, freq, clickGain, clickLen] = p.click;
+  for (let n = 0; n <= (p.repeat || 0); n++) {
+    const len = Math.floor(a.sampleRate * clickLen);
+    const buf = a.createBuffer(1, len, a.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4;
+    const click = a.createBufferSource(), filter = a.createBiquadFilter(), gain = a.createGain();
+    click.buffer = buf;
+    filter.type = filterType;
+    filter.frequency.value = freq;
+    gain.gain.value = clickGain;
+    click.connect(filter).connect(gain).connect(out);
+    click.start(t + n * 0.014);
+  }
+}
+
+// The keyboard a click belongs to: the card clicked, or the keyboard page you're on
+function soundFor(el) {
+  const card = el.closest(".card");
+  const id = card ? card.getAttribute("href").split("/").pop()
+                  : (location.hash.match(/^#\/keyboard\/([^/]+)/) || [])[1];
+  const k = id && KEYBOARDS.find(k => k.id === id);
+  return (k && k.sound) || "clack";
 }
 
 // A short "pop" that rises when opening and falls when closing
@@ -173,7 +195,8 @@ function playPop(up = true) {
 }
 
 document.addEventListener("click", e => {
-  if (e.target.closest(".card, .chips a, .store-link, .categories-menu a, .tag, .back, .about-link, .brand")) playClack();
+  const el = e.target.closest(".card, .chips a, .store-link, .categories-menu a, .tag, .back, .about-link, .brand, .detail-img");
+  if (el) playKey(soundFor(el));
 });
 
 const soundBtn = document.getElementById("sound-btn");
@@ -269,7 +292,10 @@ function detailView(k) {
   main.innerHTML = `
     <a class="back" href="javascript:history.back()">&larr; Back</a>
     <article class="detail">
-      <div class="detail-img">${image(k)}</div>
+      <div>
+        <div class="detail-img" title="Tap to hear how it sounds">${image(k)}</div>
+        <p class="small hear">Tap the keyboard to hear how it sounds.</p>
+      </div>
       <div>
         <span class="card-brand">${esc(k.brand)}</span>
         <h1>${esc(k.name)}</h1>
