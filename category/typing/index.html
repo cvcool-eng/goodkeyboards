@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Every page links to files relative to the site's main folder.
+       build-pages.ps1 changes this for the pages it makes in subfolders. -->
+  <base href="../../">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Typing Keyboards – GoodKeyboards</title>
+  <link rel="canonical" href="https://cvcool-eng.github.io/goodkeyboards/category/typing/">
+  <meta name="description" content="Comfortable, consistent boards for long typing sessions.">
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- ?v= is updated by deploy.ps1 on every publish so browsers load the newest files -->
+  <link rel="stylesheet" href="styles.css?v=20261020163647">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="menu-wrap">
+        <button id="categories-btn" class="categories-btn" aria-expanded="false" aria-controls="categories-menu">
+          <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
+          Categories
+        </button>
+        <nav id="categories-menu" class="categories-menu" aria-label="Keyboard categories" hidden>
+          <ul id="categories-list"></ul>
+        </nav>
+      </div>
+
+      <a class="brand" href="./">
+        <img src="images/logo.svg" alt="" width="40" height="40">
+        <span>GoodKeyboards</span>
+      </a>
+
+      <div class="header-right">
+        <a class="about-link" href="about/">About our website</a>
+        <button id="sound-btn" class="sound-btn" aria-label="Sound effects"></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1"><h1>Typing Keyboards</h1><p>Comfortable, consistent boards for long typing sessions.</p></main>
+
+  <footer class="site-footer">
+    <p class="thanks">Thanks for using our website :D</p>
+    <p>&copy; <span id="year"></span> GoodKeyboards. Product names and trademarks belong to their respective owners.</p>
+  </footer>
+
+  <script src="data/keyboards.js?v=20261020163647"></script>
+  <script src="app.js?v=20261020163647"></script>
+</body>
+</html>

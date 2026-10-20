@@ -51,6 +51,17 @@ if (git status --porcelain) {
   $html = [regex]::Replace($html, '\?v=[0-9]+"', "?v=$version`"")
   [IO.File]::WriteAllText("$PSScriptRoot\index.html", $html)
 }
+
+# Build a real page for every keyboard and category (so Google can find them) and sitemap.xml
+$siteUrl = gh api "repos/$owner/$Repo/pages" --jq .html_url 2>$null
+if ($siteUrl -notmatch '^https?://') { $siteUrl = "https://$owner.github.io/$Repo/" }
+try {
+  & "$PSScriptRoot\build-pages.ps1" -SiteUrl $siteUrl
+} catch {
+  Write-Host "Building pages failed: $_" -ForegroundColor Red
+  exit 1
+}
+
 git add -A
 git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) {

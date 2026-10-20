@@ -1,7 +1,10 @@
-// Simple hash router:
-//   #/                     all keyboards
-//   #/category/<id>        keyboards in one category
-//   #/keyboard/<id>        one keyboard with its store links
+// Pages (each is a real address Google can find; build-pages.ps1 makes a file for each):
+//   ./                     all keyboards
+//   category/<id>/         keyboards in one category
+//   keyboard/<id>/         one keyboard with its store links
+//   about/                 about page
+// Clicking a link swaps the page content without reloading, so sounds and
+// animations stay smooth.
 
 const main = document.getElementById("main");
 const menuBtn = document.getElementById("categories-btn");
@@ -205,8 +208,9 @@ function playKey(name = "clack") {
 // The keyboard a click belongs to: the card clicked, or the keyboard page you're on
 function soundFor(el) {
   const card = el.closest(".card");
-  const id = card ? card.getAttribute("href").split("/").pop()
-                  : (location.hash.match(/^#\/keyboard\/([^/]+)/) || [])[1];
+  const page = currentPage();
+  const id = card ? card.getAttribute("href").split("/").filter(Boolean).pop()
+                  : page.type === "keyboard" ? page.id : null;
   const k = id && KEYBOARDS.find(k => k.id === id);
   return (k && k.sound) || "clack";
 }
@@ -256,7 +260,7 @@ function buildMenu(activeId) {
   const items = [{ id: "", name: "All Keyboards", count: KEYBOARDS.length },
     ...CATEGORIES.map(c => ({ ...c, count: keyboardsIn(c.id).length }))];
   menuList.innerHTML = items.map(c => `
-    <li><a href="${c.id ? "#/category/" + c.id : "#/"}" ${c.id === activeId ? 'aria-current="page"' : ""}>
+    <li><a href="${c.id ? "category/" + c.id + "/" : "./"}" ${c.id === activeId ? 'aria-current="page"' : ""}>
       <span>${esc(c.name)}</span><span class="count">${c.count}</span>
     </a></li>`).join("");
 }
@@ -276,15 +280,15 @@ document.addEventListener("click", e => {
   if (!menu.hidden && !menu.contains(e.target) && !menuBtn.contains(e.target)) setMenu(false);
 });
 // The list page (all keyboards or a category) to return to from a keyboard page
-let lastListHash = "#/";
+let lastListPath = "./";
 
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   if (!menu.hidden) { setMenu(false); menuBtn.focus(); return; }
   // Esc on a keyboard page goes back to the list you came from
-  if (location.hash.startsWith("#/keyboard/")) {
+  if (currentPage().type === "keyboard") {
     playKey(soundFor(document.body));
-    location.hash = lastListHash;
+    navigate(lastListPath);
   }
 });
 menu.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
@@ -292,15 +296,15 @@ menu.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false);
 // ---------- Views ----------
 function chips(activeId) {
   return `<ul class="chips" aria-label="Categories">
-    <li><a href="#/" ${!activeId ? 'aria-current="page"' : ""}>All</a></li>
-    ${CATEGORIES.map(c => `<li><a href="#/category/${c.id}" ${c.id === activeId ? 'aria-current="page"' : ""}>${esc(c.name)}</a></li>`).join("")}
+    <li><a href="./" ${!activeId ? 'aria-current="page"' : ""}>All</a></li>
+    ${CATEGORIES.map(c => `<li><a href="category/${c.id}/" ${c.id === activeId ? 'aria-current="page"' : ""}>${esc(c.name)}</a></li>`).join("")}
   </ul>`;
 }
 
 function card(k, i = 0) {
   const tags = k.categories.map(id => categoryById(id)).filter(Boolean)
     .map(c => `<span class="tag">${esc(c.name)}</span>`).join("");
-  return `<li style="--i:${i}"><a class="card" href="#/keyboard/${k.id}">
+  return `<li style="--i:${i}"><a class="card" href="keyboard/${k.id}/">
     <div class="card-img">${image(k)}</div>
     <div class="card-body">
       <span class="card-brand">${esc(k.brand)}</span>
@@ -337,7 +341,7 @@ function detailView(k) {
       <span>Buy on ${esc(s.name)}</span><span aria-hidden="true">&rarr;</span>
     </a></li>`).join("");
   main.innerHTML = `
-    <a class="back" href="${lastListHash}">&larr; Back</a>
+    <a class="back" href="${lastListPath}">&larr; Back</a>
     <article class="detail">
       <div>
         <div class="detail-img" title="Tap to hear how it sounds">${image(k)}</div>
@@ -349,7 +353,7 @@ function detailView(k) {
         <p class="summary">${esc(k.summary)}</p>
         <dl class="specs">${specs}</dl>
         <div class="tags">${k.categories.map(id => categoryById(id)).filter(Boolean)
-          .map(c => `<a class="tag" href="#/category/${c.id}">${esc(c.name)}</a>`).join("")}</div>
+          .map(c => `<a class="tag" href="category/${c.id}/">${esc(c.name)}</a>`).join("")}</div>
         <section class="stores">
           <h2>Where to buy</h2>
           <ul>${stores}</ul>
@@ -384,18 +388,17 @@ function aboutView() {
 // Remember how far down each list page was scrolled, so going back from a
 // keyboard returns you to the same spot instead of the top
 const listScroll = {};
-let currentHash = null;
+let currentKey = null;
 let currentIsList = false;
 
 function route() {
-  if (currentIsList) listScroll[currentHash] = window.scrollY;
-  const cameFromKeyboard = (currentHash || "").startsWith("#/keyboard/");
+  if (currentIsList) listScroll[currentKey] = window.scrollY;
+  const cameFromKeyboard = (currentKey || "").startsWith("keyboard/");
 
-  const hash = location.hash || "#/";
-  const [, type, id] = hash.replace(/^#\/?/, "/").split("/");
+  const { type, id, key } = currentPage();
   const isList = type !== "keyboard" && type !== "about";
   let activeId = "";
-  if (isList) lastListHash = hash;
+  if (isList) lastListPath = key || "./";
 
   if (type === "category" && categoryById(id)) {
     const c = categoryById(id);
@@ -417,7 +420,7 @@ function route() {
   const aboutLink = document.querySelector(".about-link");
   if (type === "about") aboutLink.setAttribute("aria-current", "page");
   else aboutLink.removeAttribute("aria-current");
-  const restoring = isList && cameFromKeyboard && listScroll[hash] != null;
+  const restoring = isList && cameFromKeyboard && listScroll[key] != null;
 
   // Replay the bounce-in animation for the new page (not when returning to a list)
   main.classList.remove("enter");
@@ -426,12 +429,65 @@ function route() {
     main.classList.add("enter");
   }
 
-  window.scrollTo(0, restoring ? listScroll[hash] : 0);
+  window.scrollTo(0, restoring ? listScroll[key] : 0);
   main.focus({ preventScroll: true });
 
-  currentHash = hash;
+  currentKey = key;
   currentIsList = isList;
 }
 
-window.addEventListener("hashchange", route);
+// ---------- Page addresses ----------
+// The site's main folder, e.g. "/goodkeyboards/" (from the <base> tag)
+const ROOT = new URL(document.baseURI).pathname;
+
+// Which page the address bar points at, e.g. { type: "keyboard", id: "aula-f75" }
+function currentPage() {
+  let rel = location.pathname.startsWith(ROOT) ? location.pathname.slice(ROOT.length) : "";
+  rel = decodeURIComponent(rel).replace(/index\.html$/, "");
+  const [type = "", id = ""] = rel.split("/").filter(Boolean);
+  return { type, id, key: rel };
+}
+
+// Go to a page without reloading
+function navigate(href) {
+  const url = new URL(href, document.baseURI);
+  if (url.href !== location.href) history.pushState(null, "", url);
+  route();
+}
+
+// Links inside the site switch pages smoothly instead of reloading
+document.addEventListener("click", e => {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target.closest("a[href]");
+  if (!a || a.target === "_blank") return;
+  const href = a.getAttribute("href");
+  if (href.startsWith("#")) {
+    // In-page link (like "Skip to content")
+    e.preventDefault();
+    document.getElementById(href.slice(1))?.focus();
+    return;
+  }
+  const url = new URL(href, document.baseURI);
+  if (url.origin !== location.origin || !url.pathname.startsWith(ROOT)) return;
+  e.preventDefault();
+  if (url.href !== location.href) navigate(url.href);
+});
+
+// Browser back/forward buttons
+history.scrollRestoration = "manual";
+window.addEventListener("popstate", route);
+
+// Old links like ".../#/keyboard/aula-f75" still work: switch them to the new address
+function fromOldLink() {
+  if (location.hash.startsWith("#/")) {
+    let rel = location.hash.slice(2);
+    if (rel && !rel.endsWith("/")) rel += "/";
+    history.replaceState(null, "", new URL(rel || "./", document.baseURI));
+    return true;
+  }
+  return false;
+}
+window.addEventListener("hashchange", () => { if (fromOldLink()) route(); });
+
+fromOldLink();
 route();
