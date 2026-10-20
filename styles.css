@@ -133,7 +133,14 @@ main:focus { outline: none; }
 
 
 /* Detail */
-.back { display: inline-block; margin-bottom: 20px; font-weight: 500; }
+.back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; font-weight: 500; }
+.esc-hint {
+  font: 500 0.7rem "Space Grotesk", system-ui, sans-serif;
+  padding: 1px 6px; border-radius: 5px; color: var(--ink-soft);
+  background: var(--surface); border: 1px solid rgba(43, 42, 33, 0.18); border-bottom-width: 2px;
+}
+/* Only show the Esc hint on devices with a mouse (computers) */
+@media (hover: none) { .esc-hint { display: none; } }
 .detail { display: grid; gap: 32px; grid-template-columns: 1fr; }
 @media (min-width: 860px) { .detail { grid-template-columns: 1.1fr 1fr; } }
 .detail-img { border-radius: var(--radius); aspect-ratio: 16 / 10; display: grid; place-items: center; overflow: hidden; }

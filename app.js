@@ -242,8 +242,17 @@ menuBtn.addEventListener("click", () => {
 document.addEventListener("click", e => {
   if (!menu.hidden && !menu.contains(e.target) && !menuBtn.contains(e.target)) setMenu(false);
 });
+// The list page (all keyboards or a category) to return to from a keyboard page
+let lastListHash = "#/";
+
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && !menu.hidden) { setMenu(false); menuBtn.focus(); }
+  if (e.key !== "Escape") return;
+  if (!menu.hidden) { setMenu(false); menuBtn.focus(); return; }
+  // Esc on a keyboard page goes back to the list you came from
+  if (location.hash.startsWith("#/keyboard/")) {
+    playKey(soundFor(document.body));
+    location.hash = lastListHash;
+  }
 });
 menu.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
 
@@ -295,7 +304,7 @@ function detailView(k) {
       <span>Buy on ${esc(s.name)}</span><span aria-hidden="true">&rarr;</span>
     </a></li>`).join("");
   main.innerHTML = `
-    <a class="back" href="javascript:history.back()">&larr; Back</a>
+    <a class="back" href="${lastListHash}">&larr; Back <kbd class="esc-hint">Esc</kbd></a>
     <article class="detail">
       <div>
         <div class="detail-img" title="Tap to hear how it sounds">${image(k)}</div>
@@ -342,6 +351,7 @@ function aboutView() {
 function route() {
   const [, type, id] = location.hash.replace(/^#\/?/, "/").split("/");
   let activeId = "";
+  if (type !== "keyboard" && type !== "about") lastListHash = location.hash || "#/";
 
   if (type === "category" && categoryById(id)) {
     const c = categoryById(id);
